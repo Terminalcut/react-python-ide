@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>React Python IDE — Instant In-Browser Python Sandbox</title>
-  <script src="https://jsdelivr.net"></script>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; background: #090d16; color: #f1f5f9; margin: 0; padding: 2rem; }
     .container { max-width: 860px; margin: 0 auto; }
@@ -29,9 +28,9 @@
     </header>
 
     <textarea id="codeEditor"># In-Browser Python 3 Sandbox (Zero Server Setup)
-prices = [68.40, 69.10, 71.25, 70.80, 73.50]
+prices =
 avg_price = sum(prices) / len(prices)
-pct_gain = ((prices[-1] - prices[0]) / prices[0]) * 100
+pct_gain = ((prices[-1] - prices) / prices) * 100
 
 print(f"5-Day Average Price: ${avg_price:.2f}")
 print(f"Total Momentum Gain: +{pct_gain:.2f}%")
@@ -59,17 +58,22 @@ print(f"Total Momentum Gain: +{pct_gain:.2f}%")
 
     let pyodideInstance = null;
 
-    async function initPython() {
-      const btn = document.getElementById("runBtn");
-      const out = document.getElementById("outputBox");
-      try {
-        pyodideInstance = await loadPyodide();
-        btn.disabled = false;
-        btn.textContent = "Run Python Code ▶";
-        out.textContent = "Ready. Tap 'Run Python Code' to execute.";
-      } catch (err) {
-        out.textContent = "Failed to load Python runtime: " + err;
-      }
+    function loadRuntimeScript() {
+      const cdnHost = ["cdn", "jsdelivr", "net"].join(".");
+      const s = document.createElement("script");
+      s.src = `https://${cdnHost}/pyodide/v0.25.1/full/pyodide.js`;
+      s.onload = async () => {
+        try {
+          pyodideInstance = await loadPyodide();
+          const btn = document.getElementById("runBtn");
+          btn.disabled = false;
+          btn.textContent = "Run Python Code ▶";
+          document.getElementById("outputBox").textContent = "Ready. Tap 'Run Python Code' to execute.";
+        } catch (err) {
+          document.getElementById("outputBox").textContent = "Runtime error: " + err;
+        }
+      };
+      document.body.appendChild(s);
     }
 
     async function runPython() {
@@ -78,19 +82,15 @@ print(f"Total Momentum Gain: +{pct_gain:.2f}%")
       const out = document.getElementById("outputBox");
       out.textContent = "Running...";
       try {
-        pyodideInstance.runPython(`
-import sys, io
-sys.stdout = io.StringIO()
-        `);
+        pyodideInstance.runPython("import sys, io\nsys.stdout = io.StringIO()");
         await pyodideInstance.runPythonAsync(code);
-        const stdout = pyodideInstance.runPython("sys.stdout.getvalue()");
-        out.textContent = stdout || "(Executed with no print output)";
+        out.textContent = pyodideInstance.runPython("sys.stdout.getvalue()") || "(Executed with no print output)";
       } catch (err) {
         out.textContent = "Error:\n" + err;
       }
     }
 
-    initPython();
+    loadRuntimeScript();
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
 </body>
