@@ -30,10 +30,10 @@
     <textarea id="codeEditor"># In-Browser Python 3 Sandbox (Zero Server Setup)
 prices = (142.50, 148.10, 145.90, 156.20, 164.80)
 avg_price = sum(prices) / len(prices)
-pct_gain = ((prices[-1] - prices) / prices) * 100
+pct_gain = ((max(prices) - min(prices)) / min(prices)) * 100
 
 print(f"5-Day Average Price: ${avg_price:.2f}")
-print(f"Total Momentum Gain: +{pct_gain:.2f}%")
+print(f"Range Momentum Gain: +{pct_gain:.2f}%")
 </textarea>
 
     <div class="controls">
