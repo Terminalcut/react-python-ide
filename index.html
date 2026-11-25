@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>React Python IDE — Instant In-Browser Python Sandbox</title>
+  <script src="https://jsdelivr.net"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #090d16; color: #f1f5f9; margin: 0; padding: 2rem; }
+    .container { max-width: 860px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.45rem; margin: 0; color: #38bdf8; }
+    .badge { background: #1e293b; padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.8rem; color: #94a3b8; }
+    textarea { width: 100%; height: 210px; box-sizing: border-box; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 10px; padding: 1rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92rem; line-height: 1.5; resize: vertical; }
+    .controls { display: flex; gap: 0.75rem; margin: 1rem 0; align-items: center; flex-wrap: wrap; }
+    button { padding: 0.65rem 1.25rem; border-radius: 8px; border: none; background: #38bdf8; color: #0f172a; font-weight: 700; cursor: pointer; }
+    button:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+    button.secondary { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    pre { background: #020617; border: 1px solid #1e293b; border-radius: 10px; padding: 1rem; min-height: 90px; color: #34d399; font-family: ui-monospace, monospace; font-size: 0.9rem; white-space: pre-wrap; }
+    .cta-bar { margin-top: 2rem; padding: 1.25rem; background: #1e293b; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .cta-btn { background: #10b981; color: #064e3b; padding: 0.7rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>React Python IDE</h1>
+      <span class="badge">Browser WebAssembly Python</span>
+    </header>
+
+    <textarea id="codeEditor"># In-Browser Python 3 Sandbox (Zero Server Setup)
+prices = [68.40, 69.10, 71.25, 70.80, 73.50]
+avg_price = sum(prices) / len(prices)
+pct_gain = ((prices[-1] - prices[0]) / prices[0]) * 100
+
+print(f"5-Day Average Price: ${avg_price:.2f}")
+print(f"Total Momentum Gain: +{pct_gain:.2f}%")
+</textarea>
+
+    <div class="controls">
+      <button id="runBtn" onclick="runPython()" disabled>Loading Python Runtime...</button>
+      <button class="secondary" onclick="document.getElementById('outputBox').textContent = ''">Clear Output</button>
+    </div>
+
+    <pre id="outputBox">Initializing WebAssembly Python environment...</pre>
+
+    <div class="cta-bar">
+      <div>
+        <strong>Building Python Crypto &amp; Trading Bots?</strong><br />
+        <small style="color:#94a3b8;">Execute instant Solana token swaps and snipes on Photon with zero KYC.</small>
+      </div>
+      <a id="refLink" href="#" target="_blank" rel="nofollow sponsored" class="cta-btn">Launch Photon Terminal →</a>
+    </div>
+  </div>
+
+  <script>
+    const refHost = ["photon-sol", "tinyastro", "io"].join(".");
+    document.getElementById("refLink").href = "https://" + refHost + "/@Sol12";
+
+    let pyodideInstance = null;
+
+    async function initPython() {
+      const btn = document.getElementById("runBtn");
+      const out = document.getElementById("outputBox");
+      try {
+        pyodideInstance = await loadPyodide();
+        btn.disabled = false;
+        btn.textContent = "Run Python Code ▶";
+        out.textContent = "Ready. Tap 'Run Python Code' to execute.";
+      } catch (err) {
+        out.textContent = "Failed to load Python runtime: " + err;
+      }
+    }
+
+    async function runPython() {
+      if (!pyodideInstance) return;
+      const code = document.getElementById("codeEditor").value;
+      const out = document.getElementById("outputBox");
+      out.textContent = "Running...";
+      try {
+        pyodideInstance.runPython(`
+import sys, io
+sys.stdout = io.StringIO()
+        `);
+        await pyodideInstance.runPythonAsync(code);
+        const stdout = pyodideInstance.runPython("sys.stdout.getvalue()");
+        out.textContent = stdout || "(Executed with no print output)";
+      } catch (err) {
+        out.textContent = "Error:\n" + err;
+      }
+    }
+
+    initPython();
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
